@@ -1,0 +1,29 @@
+name: assignment 1 cicd
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: html linting
+        run: npx --yes htmlhint index.html
+
+      - name: docker build
+        run: docker build -t assignment1-cicd .
+
+      - name: check secrets
+        env:
+          MY_TEST_SECRET: ${{ secrets.MY_TEST_SECRET }}
+        run: |
+          if [ -n "$MY_TEST_SECRET" ]; then
+            echo "Secret is set"
+          else
+            echo "Secret is not set"
+            exit 1
+          fi
+
+
