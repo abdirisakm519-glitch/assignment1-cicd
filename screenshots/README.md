@@ -1,44 +1,42 @@
-
 # CI/CD Assignment 1 — Automated CI Pipeline
 
-## 1. Project Overview
+## Project Overview
 
-This project demonstrates how to build a basic Continuous Integration (CI) pipeline using GitHub Actions, Docker, Nginx, and HTMLHint.
+This project demonstrates a basic **Continuous Integration (CI) pipeline** using GitHub Actions.
 
-The objective is to automatically run checks whenever code is pushed to GitHub.
+I created a simple HTML webpage, served it locally using **Nginx and Docker**, and configured GitHub Actions to perform automated checks whenever I push code to GitHub.
 
-For this assignment, I created a simple HTML webpage, packaged it using Docker, tested it locally, and configured GitHub Actions to automate the checking process.
+The CI pipeline performs four steps:
 
-My pipeline includes:
-
-- Automatic triggering on every Git push
-- Checking out the repository code
-- HTML linting using HTMLHint
-- Building a Docker image
-- Checking a GitHub Secret using an environment variable
+1. Checks out the repository code.
+2. Runs HTMLHint to check `index.html` for common HTML errors.
+3. Builds the Docker image to verify the Dockerfile works.
+4. Checks that a practice GitHub Secret is available through an environment variable.
 
 **GitHub Repository:** https://github.com/abdirisakm519-glitch/assignment1-cicd
 
+**GitHub Actions:** https://github.com/abdirisakm519-glitch/assignment1-cicd/actions
+
 ---
 
-## 2. Technologies Used
+## Technologies Used
 
 | Technology | Purpose |
 |---|---|
-| Git | Version control |
-| GitHub | Hosting the repository |
-| GitHub Actions | Automating the CI pipeline |
-| Docker | Building and running containers |
-| Nginx | Hosting the HTML webpage |
-| HTML | Creating the webpage |
-| HTMLHint | Checking HTML code for mistakes |
-| GitHub Secrets | Storing sensitive values |
-| Environment Variables | Passing configuration to workflow steps |
-| VS Code | Writing and editing project files |
+| Git | Track and manage code changes |
+| GitHub | Host the project repository |
+| GitHub Actions | Automate CI checks on every push |
+| Docker | Build images and run containers |
+| Nginx | Serve the HTML webpage |
+| HTML | Create the webpage |
+| HTMLHint | Detect common HTML errors |
+| GitHub Secrets | Store sensitive configuration |
+| Environment Variables | Make configuration available to workflow steps |
+| Visual Studio Code | Write and edit project files |
 
 ---
 
-## 3. Project Structure
+## Project Structure
 
 ```text
 assignment1-cicd/
@@ -59,25 +57,27 @@ assignment1-cicd/
 └── README.md
 ```
 
+All screenshots are stored inside the `screenshots` directory.
+
+The `README.md` file is stored in the main project directory so that the image links work correctly on GitHub.
+
 ---
 
-## 4. HTML Webpage
+## 1. HTML Webpage
 
-I created an `index.html` file for my assignment.
+I created an `index.html` file containing a heading for CI/CD Assignment 1.
 
-The webpage displays a heading identifying the CI/CD project.
+During testing, HTMLHint detected that my original HTML file was missing the required `<!DOCTYPE html>` declaration.
 
-During testing, HTMLHint identified a problem with my original HTML because it was missing the `DOCTYPE` declaration.
+I corrected the HTML document structure to resolve the linting error.
 
-I corrected the HTML document to use the proper HTML structure.
-
-### HTML Source Code Screenshot
+### HTML Source Code
 
 ![HTML Source Code](screenshots/html-code.png)
 
-### Nginx Webpage Screenshot
+### Running Nginx Webpage
 
-I opened my Docker-hosted webpage in the browser at:
+After building and running the Docker container, I accessed my webpage at:
 
 http://localhost:9090
 
@@ -85,9 +85,9 @@ http://localhost:9090
 
 ---
 
-## 5. Docker Configuration
+## 2. Docker Configuration
 
-I created a Dockerfile to package my HTML webpage into a Docker image using Nginx.
+I created a Dockerfile to package my HTML webpage using Nginx.
 
 ### Dockerfile
 
@@ -98,8 +98,8 @@ COPY index.html /usr/share/nginx/html/index.html
 
 ### Dockerfile Explanation
 
-- `FROM nginx:alpine` selects a lightweight Nginx base image.
-- `COPY` copies the local HTML file into Nginx's webpage directory inside the Docker image.
+- `FROM nginx:alpine` selects the lightweight Nginx Alpine base image.
+- `COPY` copies my local `index.html` into the Nginx webpage directory inside the Docker image.
 
 ### Dockerfile Screenshot
 
@@ -107,15 +107,17 @@ COPY index.html /usr/share/nginx/html/index.html
 
 ### Building the Docker Image
 
-I used the following command:
+I ran:
 
 ```bash
 docker build -t assignment1-cicd .
 ```
 
-This command builds a Docker image called `assignment1-cicd`.
+This command builds the Docker image using my Dockerfile.
 
-The `.` tells Docker to use the current project directory as the build context.
+- `docker build` creates the image.
+- `-t assignment1-cicd` names the image.
+- `.` tells Docker to use the current project directory as the build context.
 
 ### Docker Build Screenshot
 
@@ -133,9 +135,9 @@ Explanation:
 
 - `docker run` creates and starts a container.
 - `-d` runs it in the background.
-- `--name` assigns the container a name.
-- `-p 9090:80` maps port 9090 on my Mac to port 80 inside the container.
-- `assignment1-cicd` is the name of my Docker image.
+- `--name assignment1-cicd` assigns the container a name.
+- `-p 9090:80` maps port 9090 on my Mac to port 80 inside the Nginx container.
+- The final `assignment1-cicd` specifies the image to run.
 
 ### Docker Run Screenshot
 
@@ -143,7 +145,11 @@ Explanation:
 
 ### Updating the Docker Image
 
-After modifying my HTML file, I rebuilt the Docker image:
+After changing my HTML file, I needed to rebuild the Docker image.
+
+This is because Docker's `COPY` instruction includes the HTML content when the image is built.
+
+I used:
 
 ```bash
 docker build -t assignment1-cicd .
@@ -156,25 +162,25 @@ docker stop assignment1-cicd
 docker rm assignment1-cicd
 ```
 
-Finally, I created a new container using the updated image:
+Finally, I created a new container from the updated image:
 
 ```bash
 docker run -d --name assignment1-cicd -p 9090:80 assignment1-cicd
 ```
 
-This allowed me to view the updated webpage.
+This allowed the container to serve the updated webpage.
 
 ---
 
-## 6. GitHub Actions CI Pipeline
+## 3. GitHub Actions CI Pipeline
 
-I created a GitHub Actions workflow inside:
+I created a GitHub Actions workflow at:
 
 `.github/workflows/ci.yml`
 
-The workflow automatically runs whenever I push changes to GitHub.
+The purpose of this workflow is to automatically check my project whenever I push code to GitHub.
 
-### CI Workflow
+### CI Workflow Configuration
 
 ```yaml
 name: assignment 1 cicd
@@ -206,43 +212,49 @@ jobs:
           fi
 ```
 
-### Explanation of the Workflow
+### How the CI Pipeline Works
 
-**1. Push Trigger**
+#### Step 1 — Automatic Push Trigger
 
 ```yaml
 on: [push]
 ```
 
-Automatically runs the pipeline whenever changes are pushed to GitHub.
+This tells GitHub Actions to automatically execute the workflow whenever code is pushed to the repository.
 
-**2. Checkout Code**
+#### Step 2 — Checkout Repository
 
 ```yaml
 uses: actions/checkout@v4
 ```
 
-Downloads the repository files onto the GitHub Actions runner.
+This makes the repository files available on the GitHub Actions runner.
 
-**3. HTML Linting**
+#### Step 3 — HTML Linting
 
 ```yaml
 run: npx --yes htmlhint index.html
 ```
 
-Checks the HTML file for common mistakes and coding-standard problems.
+HTMLHint checks the HTML file for common mistakes and coding-standard issues.
 
-**4. Docker Build**
+If HTMLHint identifies an error, the step fails and GitHub Actions reports the failure.
+
+#### Step 4 — Docker Build Check
 
 ```yaml
 run: docker build -t assignment1-cicd .
 ```
 
-Verifies that Docker can successfully build the image.
+This checks whether Docker can successfully build my application image.
 
-**5. GitHub Secrets Check**
+The workflow builds the image but does not deploy it or start a container.
 
-Checks whether the configured GitHub Secret is available to the workflow.
+#### Step 5 — GitHub Secret Check
+
+The final step verifies that my practice GitHub Secret is available.
+
+If the secret is missing, the step fails.
 
 ### GitHub Actions Workflow Screenshot
 
@@ -250,38 +262,48 @@ Checks whether the configured GitHub Secret is available to the workflow.
 
 ---
 
-## 7. GitHub Secrets and Environment Variables
+## 4. GitHub Secrets and Environment Variables
 
 I created a practice GitHub Secret named:
 
 `MY_TEST_SECRET`
 
-I configured it using:
+I configured the secret using:
 
 **GitHub Repository → Settings → Secrets and variables → Actions**
 
-Inside my workflow, I used:
+The workflow retrieves the secret using:
 
 ```yaml
 env:
   MY_TEST_SECRET: ${{ secrets.MY_TEST_SECRET }}
 ```
 
-This retrieves the stored GitHub Secret and makes it available as an environment variable within that step.
+### Explanation
 
-The workflow checks whether the environment variable contains a value.
+- `env:` defines an environment variable for the workflow step.
+- `${{ secrets.MY_TEST_SECRET }}` retrieves the stored value from GitHub Secrets.
+- `$MY_TEST_SECRET` accesses the variable inside the shell command.
 
-If the secret is available, the workflow displays:
+The workflow checks whether the variable contains a value.
+
+If it exists, the workflow prints:
 
 ```text
 Secret is set
 ```
 
-If the secret is missing, the step fails.
+If it is missing, the step prints:
 
-The secret value is not printed in the workflow logs.
+```text
+Secret is not set
+```
 
-This was included as an additional learning exercise to practise using GitHub Secrets securely.
+and uses `exit 1` to fail the step.
+
+The actual secret value is never printed.
+
+This secret check was included as an additional learning exercise. The static Nginx webpage does not require a secret to build or run.
 
 ### GitHub Secrets Screenshot
 
@@ -289,51 +311,71 @@ This was included as an additional learning exercise to practise using GitHub Se
 
 ---
 
-## 8. Troubleshooting and Debugging
+## 5. Troubleshooting and Debugging
 
-During this assignment, I encountered several problems and learned how to troubleshoot them.
+During the assignment, I encountered several issues that helped me understand Docker, Git, and GitHub Actions.
 
-### Problem 1 — Empty Dockerfile
+### Issue 1 — Empty Dockerfile
 
-Initially, Docker reported:
+When I first attempted to build my Docker image, Docker displayed:
 
 ```text
 the Dockerfile cannot be empty
 ```
 
-I corrected the Dockerfile by adding the required `FROM` and `COPY` instructions.
+**Cause:** I had created the Dockerfile but had not added the required instructions.
 
-### Problem 2 — Docker Port Conflict
+**Solution:** I added the `FROM` and `COPY` instructions and rebuilt the image.
 
-While running the container, I received an error indicating that port 8080 was already allocated.
+### Issue 2 — Incorrect Docker COPY Path
 
-I solved this by changing the host port to 9090:
+My initial `COPY` instruction referenced the wrong source path.
+
+I corrected it to:
+
+```dockerfile
+COPY index.html /usr/share/nginx/html/index.html
+```
+
+This copies the local HTML file into the correct location inside the image.
+
+### Issue 3 — Docker Port Conflict
+
+When running my container, Docker reported:
+
+```text
+port is already allocated
+```
+
+Port 8080 was already being used.
+
+**Solution:** I changed the host port to 9090 while keeping Nginx on port 80:
 
 ```bash
 docker run -d --name assignment1-cicd -p 9090:80 assignment1-cicd
 ```
 
-This allowed my container to run without conflicting with another application.
+This allowed my webpage to run locally.
 
-### Problem 3 — GitHub Actions HTML Linting Failure
+### Issue 4 — HTML Linting Failure
 
-My first GitHub Actions run failed during HTML linting.
+My initial GitHub Actions run failed during HTML linting.
 
-HTMLHint reported:
+HTMLHint displayed:
 
 ```text
 Doctype must be declared before any non-comment content.
 ```
 
-I identified that my HTML file was missing the required DOCTYPE declaration.
+**Cause:** My original `index.html` was missing the HTML5 DOCTYPE declaration.
 
-I corrected the HTML structure and prepared the updated file for another CI run.
+**Solution:** I updated the HTML document to include the required declaration and proper document structure.
 
-This helped me understand how linting identifies errors automatically.
+This demonstrated how an automated CI pipeline can detect coding problems.
 
-### Problem 4 — Git Files Not Tracked
+### Issue 5 — Untracked Git Files
 
-Some files were not included in my initial Git push.
+My initial Git push did not include some important project files.
 
 Using:
 
@@ -341,25 +383,31 @@ Using:
 git status
 ```
 
-I discovered that my `.github` directory, `Dockerfile`, and `index.html` were untracked.
+I discovered that `.github/`, `Dockerfile`, and `index.html` were untracked.
 
-I added the missing files, committed the changes, and pushed them to my GitHub repository.
+**Solution:** I staged the files, committed them, and pushed the changes to GitHub.
+
+### Issue 6 — README Screenshot Paths
+
+Some README images did not display correctly.
+
+The README was located inside the `screenshots` folder, causing the relative image paths to point to the wrong location.
+
+**Solution:** I moved `README.md` to the project root and checked that the screenshot filenames matched the Markdown links.
 
 ---
 
-## 9. Git and GitHub
+## 6. Git Commands Used
 
-I created a local Git repository and connected it to GitHub.
+I used Git to track and upload my assignment.
 
-The main commands I used were:
-
-### Check Git Status
+### Check Repository Status
 
 ```bash
 git status
 ```
 
-Shows modified and untracked files.
+Shows modified, staged, and untracked files.
 
 ### Stage Changes
 
@@ -367,88 +415,92 @@ Shows modified and untracked files.
 git add .
 ```
 
-Stages project changes for the next commit.
+Stages the project changes for the next commit.
 
 ### Commit Changes
 
 ```bash
-git commit -m "Complete CI/CD Assignment 1"
+git commit -m "Update CI/CD assignment"
 ```
 
-Saves the staged changes in the local Git history.
+Saves the staged changes in the local Git repository.
 
-### Push Changes
+### Push to GitHub
 
 ```bash
 git push
 ```
 
-Uploads the committed changes to GitHub.
+Uploads my commits to the GitHub repository.
 
-Each push triggers the GitHub Actions workflow.
+Because my workflow uses `on: [push]`, pushing a commit automatically starts the CI pipeline.
 
 ---
 
-## 10. GitHub Actions Execution Evidence
+## 7. GitHub Actions Execution Evidence
 
-My CI workflow includes:
+My CI workflow is configured to perform these checks:
 
-1. Checkout code
-2. HTML linting
-3. Docker build
-4. GitHub Secrets check
+1. Checkout repository code
+2. HTML linting using HTMLHint
+3. Docker image build
+4. GitHub Secret availability check
 
-The workflow is configured to run automatically on every push.
+The workflow runs automatically whenever code is pushed to GitHub.
 
 ### GitHub Actions Screenshot
 
 ![GitHub Actions](screenshots/github-actions.png)
 
-The latest workflow result can be checked in the GitHub Actions tab:
+**GitHub Actions Runs:**
 
 https://github.com/abdirisakm519-glitch/assignment1-cicd/actions
 
----
-
-## 11. What I Learned
-
-Through this assignment, I learned how to:
-
-- Create and manage a GitHub repository
-- Initialize Git locally
-- Stage, commit, and push changes
-- Write a Dockerfile
-- Build Docker images
-- Create and run Docker containers
-- Understand Docker port mapping
-- Rebuild images after updating application files
-- Create a GitHub Actions workflow
-- Use YAML syntax and indentation
-- Automatically trigger CI checks on a push
-- Use HTMLHint for automated linting
-- Debug GitHub Actions failures
-- Work with GitHub Secrets
-- Use environment variables with `env:`
-- Organize project screenshots
-- Document a project using Markdown
+The latest workflow run should be checked to confirm that all steps have passed successfully.
 
 ---
 
-## 12. Conclusion
+## 8. What I Learned
 
-This project demonstrates how to create a basic Continuous Integration pipeline using GitHub Actions.
+Through this assignment, I gained practical experience in:
 
-I created an HTML webpage, packaged it with Docker and Nginx, and tested it locally.
-
-I configured GitHub Actions to automatically check the HTML, build the Docker image, and verify that a GitHub Secret is available whenever changes are pushed.
-
-I also gained experience troubleshooting Docker, Git, and CI pipeline errors.
-
-The assignment improved my understanding of how automated checks help identify problems during software development.
+- Creating and organizing a GitHub repository
+- Using Git for version control
+- Writing HTML source code
+- Creating a Dockerfile
+- Understanding Docker images and containers
+- Building Docker images
+- Running Docker containers locally
+- Understanding Docker port mapping
+- Resolving Docker port conflicts
+- Rebuilding images after source-code changes
+- Creating GitHub Actions workflows
+- Writing YAML with correct indentation
+- Configuring automatic push triggers
+- Adding HTML linting to a CI pipeline
+- Debugging failed GitHub Actions runs
+- Using GitHub Secrets securely
+- Accessing secrets through environment variables
+- Organizing project evidence screenshots
+- Writing a professional Markdown README
 
 ---
 
-## 13. Repository Links
+## Conclusion
+
+This assignment demonstrates the implementation of a basic Continuous Integration pipeline using GitHub Actions, Docker, Nginx, and HTMLHint.
+
+I created an HTML webpage, packaged it in a Docker image, and tested it locally using an Nginx container.
+
+I also configured GitHub Actions to automatically run HTML linting, Docker build checks, and a practice GitHub Secret check whenever code is pushed to the repository.
+
+Throughout the assignment, I gained hands-on experience identifying and resolving errors in Docker, Git, HTML, and CI workflows.
+
+The project helped me understand how automated CI checks can detect problems early and support a more reliable development process.
+
+---
+
+## Repository Links
 
 **GitHub Repository:**
 
